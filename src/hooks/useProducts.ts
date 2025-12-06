@@ -18,13 +18,11 @@ export function useProducts(gender?: string) {
 
   const fetchProducts = async () => {
     setLoading(true);
-    let query = supabase.from('products').select('*').order('created_at', { ascending: false });
-
-    if (gender) {
-      query = query.eq('gender', gender);
-    }
-
-    const { data, error } = await query;
+    
+    // Use secure RPC function that only exposes wholesale_price to admins
+    const { data, error } = await supabase.rpc('get_products', { 
+      p_gender: gender || null 
+    });
 
     if (error) {
       console.error('Error fetching products:', error);

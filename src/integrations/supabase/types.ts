@@ -132,6 +132,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_products: {
+        Args: { p_gender?: string }
+        Returns: {
+          created_at: string
+          description: string
+          gender: string
+          id: string
+          image_url: string
+          retail_price: number
+          title: string
+          updated_at: string
+          wholesale_price: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
