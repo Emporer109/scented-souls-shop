@@ -1,4 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -13,82 +14,91 @@ interface NotificationPayload {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const firebaseServerKey = Deno.env.get('FIREBASE_SERVER_KEY');
-    if (!firebaseServerKey) {
-      throw new Error('FIREBASE_SERVER_KEY is not configured');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    const adminEmail = Deno.env.get('ADMIN_EMAIL');
+    
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+    if (!adminEmail) {
+      throw new Error('ADMIN_EMAIL is not configured');
     }
 
+    const resend = new Resend(resendApiKey);
+    const { userId, productTitle, quantity }: NotificationPayload = await req.json();
+    
+    console.log('Sending email notification:', { userId, productTitle, quantity });
+
+    // Get user info
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { userId, productTitle, quantity }: NotificationPayload = await req.json();
-    console.log('Received notification request:', { userId, productTitle, quantity });
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', userId)
+      .maybeSingle();
 
-    // Fetch all admin FCM tokens
-    const { data: tokens, error: tokensError } = await supabase
-      .from('admin_fcm_tokens')
-      .select('fcm_token');
+    const customerName = profile?.full_name || 'A customer';
+    const customerEmail = profile?.email || 'Unknown';
+    const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-    if (tokensError) {
-      console.error('Error fetching tokens:', tokensError);
-      throw tokensError;
-    }
+    const emailResponse = await resend.emails.send({
+      from: 'Cart Notifications <onboarding@resend.dev>',
+      to: [adminEmail],
+      subject: `🛒 New Cart Activity - ${productTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">🛒 New Cart Activity!</h1>
+          </div>
+          <div style="background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+            <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
+              <strong>${customerName}</strong> added an item to their cart.
+            </p>
+            <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Product:</td>
+                  <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 600;">${productTitle}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Quantity:</td>
+                  <td style="padding: 10px 0; color: #111827; font-size: 14px; font-weight: 600;">${quantity}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Customer Email:</td>
+                  <td style="padding: 10px 0; color: #111827; font-size: 14px;">${customerEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-size: 14px;">Time:</td>
+                  <td style="padding: 10px 0; color: #111827; font-size: 14px;">${timestamp}</td>
+                </tr>
+              </table>
+            </div>
+            <p style="color: #9ca3af; font-size: 12px; margin-top: 20px; text-align: center;">
+              This is an automated notification from your store.
+            </p>
+          </div>
+        </div>
+      `,
+    });
 
-    if (!tokens || tokens.length === 0) {
-      console.log('No admin tokens found');
-      return new Response(
-        JSON.stringify({ message: 'No admin tokens registered' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`Sending notifications to ${tokens.length} admin(s)`);
-
-    // Send notification to each admin
-    const results = await Promise.all(
-      tokens.map(async ({ fcm_token }) => {
-        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-          method: 'POST',
-          headers: {
-            'Authorization': `key=${firebaseServerKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: fcm_token,
-            notification: {
-              title: '🛒 New Cart Activity!',
-              body: `A customer added ${quantity}x "${productTitle}" to their cart`,
-              icon: '/favicon.ico',
-            },
-            data: {
-              userId,
-              productTitle,
-              quantity: quantity.toString(),
-              timestamp: new Date().toISOString(),
-            },
-          }),
-        });
-
-        const result = await response.json();
-        console.log('FCM response:', result);
-        return result;
-      })
-    );
+    console.log('Email sent successfully:', emailResponse);
 
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error in send-cart-notification:', errorMessage);
+    console.error('Error sending email notification:', errorMessage);
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
