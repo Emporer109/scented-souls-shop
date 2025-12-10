@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_fcm_tokens: {
+        Row: {
+          created_at: string
+          device_info: string | null
+          fcm_token: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: string | null
+          fcm_token: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: string | null
+          fcm_token?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
