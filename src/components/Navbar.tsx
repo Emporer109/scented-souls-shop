@@ -53,6 +53,11 @@ export function Navbar() {
                     )}
                   </Button>
                 </Link>
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
                 {isAdmin && (
                   <Link to="/admin">
                     <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
@@ -116,6 +121,14 @@ export function Navbar() {
                   >
                     <ShoppingCart className="h-4 w-4" />
                     Cart ({totalItems})
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="text-foreground hover:text-primary transition-colors font-body text-sm uppercase tracking-wider py-2 flex items-center gap-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4" />
+                    Profile
                   </Link>
                   {isAdmin && (
                     <Link
