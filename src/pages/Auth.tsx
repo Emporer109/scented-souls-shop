@@ -8,8 +8,33 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 
-const emailSchema = z.string().email('Invalid email address');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const emailSchema = z
+  .string()
+  .trim()
+  .min(1, 'Email is required')
+  .email('Please enter a valid email address')
+  .regex(
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+    'Please enter a valid email address with a proper domain'
+  );
+
+const passwordSchema = z
+  .string()
+  .min(1, 'Password is required')
+  .min(6, 'Password must be at least 6 characters');
+
+const fullNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Full name is required')
+  .min(2, 'Full name must be at least 2 characters')
+  .max(100, 'Full name must be less than 100 characters');
+
+const phoneNumberSchema = z
+  .string()
+  .trim()
+  .min(1, 'Phone number is required')
+  .regex(/^\d{10}$/, 'Please enter a valid 10-digit phone number');
 
 const Auth = () => {
   const { user, signIn, signUp, loading: authLoading } = useAuth();
@@ -36,7 +61,7 @@ const Auth = () => {
   const validateForm = () => {
     const newErrors: typeof errors = {};
     
-    const emailResult = emailSchema.safeParse(email);
+    const emailResult = emailSchema.safeParse(email.trim());
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
@@ -46,14 +71,17 @@ const Auth = () => {
       newErrors.password = passwordResult.error.errors[0].message;
     }
 
-    if (!isLogin && !fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
+    if (!isLogin) {
+      const fullNameResult = fullNameSchema.safeParse(fullName);
+      if (!fullNameResult.success) {
+        newErrors.fullName = fullNameResult.error.errors[0].message;
+      }
 
-    if (!isLogin && !phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!isLogin && !/^\d{10}$/.test(phoneNumber.replace(/\D/g, ''))) {
-      newErrors.phoneNumber = 'Please enter a valid 10-digit phone number';
+      const cleanPhone = phoneNumber.replace(/\D/g, '');
+      const phoneResult = phoneNumberSchema.safeParse(cleanPhone);
+      if (!phoneResult.success) {
+        newErrors.phoneNumber = phoneResult.error.errors[0].message;
+      }
     }
 
     setErrors(newErrors);
@@ -144,6 +172,7 @@ const Auth = () => {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
                     className="mt-1.5 bg-input border-border focus:border-primary"
+                    required
                   />
                   {errors.fullName && (
                     <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
@@ -158,8 +187,9 @@ const Auth = () => {
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="Enter your phone number"
+                    placeholder="Enter your 10-digit phone number"
                     className="mt-1.5 bg-input border-border focus:border-primary"
+                    required
                   />
                   {errors.phoneNumber && (
                     <p className="text-destructive text-sm mt-1">{errors.phoneNumber}</p>
@@ -179,6 +209,7 @@ const Auth = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="mt-1.5 bg-input border-border focus:border-primary"
+                required
               />
               {errors.email && (
                 <p className="text-destructive text-sm mt-1">{errors.email}</p>
@@ -196,6 +227,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="mt-1.5 bg-input border-border focus:border-primary"
+                required
               />
               {errors.password && (
                 <p className="text-destructive text-sm mt-1">{errors.password}</p>
