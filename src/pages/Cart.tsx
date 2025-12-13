@@ -1,14 +1,59 @@
+import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { CartItemCard } from '@/components/CartItem';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 
 const Cart = () => {
   const { user, loading: authLoading } = useAuth();
-  const { cartItems, loading, totalPrice, removeOneFromCart, removeFromCart } = useCart();
+  const { cartItems, loading, totalPrice, removeOneFromCart, removeFromCart, refreshCart } = useCart();
+  const { toast } = useToast();
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!user || cartItems.length === 0) return;
+
+    setCheckoutLoading(true);
+    try {
+      const checkoutPayload = {
+        userId: user.id,
+        cartItems: cartItems.map(item => ({
+          productTitle: item.product?.title || 'Unknown Product',
+          quantity: item.quantity,
+          price: (item.product?.retail_price || 0) * item.quantity,
+        })),
+        totalPrice,
+      };
+
+      const { data, error } = await supabase.functions.invoke('checkout-notification', {
+        body: checkoutPayload,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Checkout Completed!",
+        description: "Your order has been placed successfully. We'll contact you soon!",
+      });
+
+      // Refresh cart to show it's empty
+      refreshCart();
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast({
+        title: "Checkout Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -74,12 +119,27 @@ const Cart = () => {
                 <div className="flex items-center justify-between mb-6">
                   <span className="font-display text-xl text-foreground">Total</span>
                   <span className="font-display text-3xl text-primary">
-                    ${totalPrice.toFixed(2)}
+                    ₹{totalPrice.toFixed(2)}
                   </span>
                 </div>
-                <Button variant="hero" className="w-full" size="lg">
-                  Proceed to Checkout
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Button 
+                  variant="hero" 
+                  className="w-full" 
+                  size="lg"
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                >
+                  {checkoutLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      Proceed to Checkout
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
                 </Button>
                 <p className="font-body text-sm text-muted-foreground text-center mt-4">
                   Secure checkout with SSL encryption

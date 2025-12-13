@@ -2,3 +2,6 @@ project_id = "qcxbeqgcsfjkketstwtf"
 
 [functions.send-cart-notification]
 verify_jwt = false
+
+[functions.checkout-notification]
+verify_jwt = false
