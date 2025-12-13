@@ -64,22 +64,6 @@ export function useCart() {
     fetchCart();
   }, [user]);
 
-  const sendAdminNotification = async (productTitle: string, quantity: number) => {
-    try {
-      const { error } = await supabase.functions.invoke('send-cart-notification', {
-        body: {
-          userId: user?.id || 'anonymous',
-          productTitle,
-          quantity,
-        },
-      });
-      if (error) {
-        console.error('Failed to send admin notification:', error);
-      }
-    } catch (err) {
-      console.error('Error sending notification:', err);
-    }
-  };
 
   const addToCart = async (productId: string) => {
     if (!user) {
@@ -127,11 +111,6 @@ export function useCart() {
         });
         return false;
       }
-    }
-
-    // Send notification to admin
-    if (product?.title) {
-      sendAdminNotification(product.title, 1);
     }
 
     toast({

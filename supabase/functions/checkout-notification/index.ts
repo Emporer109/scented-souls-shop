@@ -47,12 +47,13 @@ serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email, full_name')
+      .select('email, full_name, phone_number')
       .eq('id', userId)
       .maybeSingle();
 
     const customerName = profile?.full_name || 'A customer';
     const customerEmail = profile?.email || 'Unknown';
+    const customerPhone = profile?.phone_number || 'Not provided';
     const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     // Build items list HTML
@@ -82,6 +83,7 @@ serve(async (req) => {
               <h3 style="color: #374151; margin: 0 0 15px 0;">Customer Details</h3>
               <p style="margin: 5px 0; color: #6b7280;"><strong>Name:</strong> ${customerName}</p>
               <p style="margin: 5px 0; color: #6b7280;"><strong>Email:</strong> ${customerEmail}</p>
+              <p style="margin: 5px 0; color: #6b7280;"><strong>Phone:</strong> ${customerPhone}</p>
               <p style="margin: 5px 0; color: #6b7280;"><strong>Time:</strong> ${timestamp}</p>
             </div>
             

@@ -18,7 +18,8 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string; phoneNumber?: string }>({});
 
   if (authLoading) {
     return (
@@ -49,6 +50,12 @@ const Auth = () => {
       newErrors.fullName = 'Full name is required';
     }
 
+    if (!isLogin && !phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!isLogin && !/^\d{10}$/.test(phoneNumber.replace(/\D/g, ''))) {
+      newErrors.phoneNumber = 'Please enter a valid 10-digit phone number';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -76,7 +83,7 @@ const Auth = () => {
           });
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, phoneNumber);
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
@@ -125,22 +132,40 @@ const Auth = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
-              <div>
-                <Label htmlFor="fullName" className="font-body text-foreground">
-                  Full Name
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className="mt-1.5 bg-input border-border focus:border-primary"
-                />
-                {errors.fullName && (
-                  <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
-                )}
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="fullName" className="font-body text-foreground">
+                    Full Name
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="mt-1.5 bg-input border-border focus:border-primary"
+                  />
+                  {errors.fullName && (
+                    <p className="text-destructive text-sm mt-1">{errors.fullName}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="phoneNumber" className="font-body text-foreground">
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Enter your phone number"
+                    className="mt-1.5 bg-input border-border focus:border-primary"
+                  />
+                  {errors.phoneNumber && (
+                    <p className="text-destructive text-sm mt-1">{errors.phoneNumber}</p>
+                  )}
+                </div>
+              </>
             )}
 
             <div>
