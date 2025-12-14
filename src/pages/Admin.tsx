@@ -361,7 +361,7 @@ const Admin = () => {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="retail_price">Retail Price ($)</Label>
+                          <Label htmlFor="retail_price">Retail Price (₹)</Label>
                           <Input
                             id="retail_price"
                             type="number"
@@ -373,7 +373,7 @@ const Admin = () => {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="wholesale_price">Wholesale Price ($)</Label>
+                          <Label htmlFor="wholesale_price">Wholesale Price (₹)</Label>
                           <Input
                             id="wholesale_price"
                             type="number"
@@ -482,12 +482,12 @@ const Admin = () => {
                             </td>
                             <td className="px-4 py-4">
                               <span className="font-display text-primary">
-                                ${product.retail_price.toFixed(2)}
+                                ₹{product.retail_price.toFixed(2)}
                               </span>
                             </td>
                             <td className="px-4 py-4">
                               <span className="font-body text-muted-foreground">
-                                {product.wholesale_price !== null ? `$${product.wholesale_price.toFixed(2)}` : '-'}
+                                {product.wholesale_price !== null ? `₹${product.wholesale_price.toFixed(2)}` : '-'}
                               </span>
                             </td>
                             <td className="px-4 py-4">

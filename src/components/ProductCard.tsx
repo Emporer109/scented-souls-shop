@@ -42,11 +42,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         {/* Pricing */}
         <div className="flex items-baseline gap-3 mb-4">
           <span className="font-display text-2xl text-primary">
-            ${product.retail_price.toFixed(2)}
+            ₹{product.retail_price.toFixed(2)}
           </span>
           {product.wholesale_price !== null && (
             <span className="font-body text-sm text-muted-foreground line-through">
-              ${product.wholesale_price.toFixed(2)}
+              ₹{product.wholesale_price.toFixed(2)}
             </span>
           )}
         </div>

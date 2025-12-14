@@ -54,7 +54,7 @@ const Index = () => {
       <section className="py-24 px-4">
         <div className="container mx-auto max-w-6xl">
           <h2 className="font-display text-3xl md:text-4xl text-center text-foreground mb-16 animate-fade-in-up">
-            Why Choose <span className="text-primary">Luxe Parfum</span>
+            Why Choose <span className="text-primary">Luxury Perfumes</span>
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -110,11 +110,11 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="font-display text-xl text-primary">Luxe</span>
-              <span className="font-elegant text-lg text-foreground">Parfum</span>
+              <span className="font-display text-xl text-primary">Luxury</span>
+              <span className="font-elegant text-lg text-foreground">Perfumes</span>
             </div>
             <p className="font-body text-sm text-muted-foreground">
-              © 2024 Luxe Parfum. All rights reserved.
+              © 2024 Luxury Perfumes. All rights reserved.
             </p>
           </div>
         </div>

@@ -38,7 +38,7 @@ export function CartItemCard({ item, onRemoveOne, onRemoveAll }: CartItemProps) 
         </p>
         <div className="flex items-baseline gap-2 mt-2">
           <span className="font-display text-lg text-primary">
-            ${(item.product?.retail_price || 0).toFixed(2)}
+            ₹{(item.product?.retail_price || 0).toFixed(2)}
           </span>
           <span className="font-body text-sm text-muted-foreground">
             × {item.quantity}
@@ -69,7 +69,7 @@ export function CartItemCard({ item, onRemoveOne, onRemoveAll }: CartItemProps) 
       {/* Subtotal */}
       <div className="flex items-center">
         <span className="font-display text-xl text-foreground">
-          ${((item.product?.retail_price || 0) * item.quantity).toFixed(2)}
+          ₹{((item.product?.retail_price || 0) * item.quantity).toFixed(2)}
         </span>
       </div>
     </div>
