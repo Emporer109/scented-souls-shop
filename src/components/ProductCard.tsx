@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
@@ -9,7 +10,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   return (
-    <div className="group glass-card rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 animate-fade-in-up">
+    <Link to={`/product/${product.id}`} className="block">
+      <div className="group glass-card rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-500 animate-fade-in-up">
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-secondary">
         {product.image_url ? (
@@ -55,12 +57,17 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <Button
           variant="gold"
           className="w-full"
-          onClick={() => onAddToCart(product.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToCart(product.id);
+          }}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           Add to Cart
         </Button>
       </div>
     </div>
+    </Link>
   );
 }

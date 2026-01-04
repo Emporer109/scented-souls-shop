@@ -30,15 +30,35 @@ const Cart = () => {
         totalPrice,
       };
 
-      const { data, error } = await supabase.functions.invoke('checkout-notification', {
+      // Send admin notification
+      const { error: adminError } = await supabase.functions.invoke('checkout-notification', {
         body: checkoutPayload,
       });
 
-      if (error) throw error;
+      if (adminError) throw adminError;
+
+      // Get user profile for email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      // Send user notification
+      if (profile?.email) {
+        await supabase.functions.invoke('user-checkout-notification', {
+          body: {
+            userEmail: profile.email,
+            userName: profile.full_name || 'Valued Customer',
+            cartItems: checkoutPayload.cartItems,
+            totalPrice,
+          },
+        });
+      }
 
       toast({
         title: "Checkout Completed!",
-        description: "Your order has been placed successfully. We'll contact you soon!",
+        description: "Your order has been placed. Check your email for confirmation!",
       });
 
       // Refresh cart to show it's empty
