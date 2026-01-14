@@ -56,6 +56,25 @@ const Cart = () => {
         });
       }
 
+      // Send push notifications to user and admin
+      await supabase.functions.invoke('send-push-notification', {
+        body: {
+          userId: user.id,
+          userEmail: profile?.email,
+          notifyAdmin: true,
+          userNotification: {
+            title: 'Order Confirmed! 🎉',
+            body: 'Your order has been placed successfully!',
+            url: '/cart',
+          },
+          adminNotification: {
+            title: 'New Order Received! 📦',
+            body: `New order from ${profile?.email || 'a customer'}`,
+            url: '/admin',
+          },
+        },
+      });
+
       toast({
         title: "Checkout Completed!",
         description: "Your order has been placed. Check your email for confirmation!",
