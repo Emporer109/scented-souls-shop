@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, User, Mail, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Save, Loader2 } from 'lucide-react';
 
 export default function Profile() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,13 +33,14 @@ export default function Profile() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, email')
+        .select('full_name, email, phone_number')
         .eq('id', user!.id)
         .single();
 
       if (error) throw error;
 
       setFullName(data?.full_name || '');
+      setPhoneNumber(data?.phone_number || '');
       setEmail(data?.email || user?.email || '');
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -48,14 +50,23 @@ export default function Profile() {
     }
   };
 
+  const validatePhoneNumber = (phone: string) => {
+    return /^\d{10}$/.test(phone);
+  };
+
   const handleSave = async () => {
     if (!user) return;
+
+    if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
 
     setSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: fullName })
+        .update({ full_name: fullName, phone_number: phoneNumber || null })
         .eq('id', user.id);
 
       if (error) throw error;
@@ -107,6 +118,23 @@ export default function Profile() {
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Enter your full name"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Phone Number
+              </Label>
+              <Input
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="Enter your 10-digit phone number"
+                maxLength={10}
+              />
+              <p className="text-xs text-muted-foreground">
+                10-digit phone number for order notifications
+              </p>
             </div>
 
             <div className="space-y-2">
