@@ -1,15 +1,42 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Settings, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, LogOut, Settings, Menu, X, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/hooks/useCart';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function Navbar() {
   const { user, isAdmin, signOut } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      setIsDark(false);
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    
+    if (newIsDark) {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -40,7 +67,23 @@ export function Navbar() {
           </div>
 
           {/* Right Side */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2">
+            {/* Theme Toggle Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme}
+              className="relative text-foreground hover:text-primary overflow-hidden group"
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              <div className={`absolute inset-0 bg-primary/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300`} />
+              {isDark ? (
+                <Sun className="h-5 w-5 transition-all duration-300 rotate-0 group-hover:rotate-90" />
+              ) : (
+                <Moon className="h-5 w-5 transition-all duration-300 rotate-0 group-hover:-rotate-12" />
+              )}
+            </Button>
+
             {user ? (
               <>
                 <Link to="/cart" className="relative">
@@ -160,6 +203,15 @@ export function Navbar() {
                   Sign In
                 </Link>
               )}
+              
+              {/* Mobile Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="text-foreground hover:text-primary transition-colors font-body text-sm uppercase tracking-wider py-2 flex items-center gap-2 text-left"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDark ? 'Light Mode' : 'Dark Mode'}
+              </button>
             </div>
           </div>
         )}

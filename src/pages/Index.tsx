@@ -1,23 +1,48 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
-import { LampToggle } from '@/components/LampToggle';
 import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const Index = () => {
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    // Listen for theme changes
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkTheme();
+    
+    // Create observer for class changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-500">
       <Navbar />
-      <LampToggle />
       
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image */}
+        {/* Background Image with theme-aware overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/images/hero-bg.webp)' }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500"
+          style={{ 
+            backgroundImage: 'url(/images/hero-bg.webp)',
+            filter: isDark ? 'none' : 'brightness(1.1) saturate(0.9)',
+          }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
+          <div 
+            className={`absolute inset-0 transition-all duration-500 ${
+              isDark 
+                ? 'bg-gradient-to-b from-background/70 via-background/50 to-background' 
+                : 'bg-gradient-to-b from-background/60 via-background/40 to-background'
+            }`} 
+          />
         </div>
 
         {/* Content */}
