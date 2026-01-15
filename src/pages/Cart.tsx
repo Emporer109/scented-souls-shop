@@ -20,6 +20,13 @@ const Cart = () => {
 
     setCheckoutLoading(true);
     try {
+      // Get user profile first (needed for all notifications)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
       const checkoutPayload = {
         userId: user.id,
         cartItems: cartItems.map(item => ({
@@ -30,50 +37,48 @@ const Cart = () => {
         totalPrice,
       };
 
-      // Send admin notification
-      const { error: adminError } = await supabase.functions.invoke('checkout-notification', {
-        body: checkoutPayload,
-      });
-
-      if (adminError) throw adminError;
-
-      // Get user profile for email
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, full_name')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      // Send user notification
-      if (profile?.email) {
-        await supabase.functions.invoke('user-checkout-notification', {
+      // Run all notifications in parallel for faster checkout
+      const notificationPromises = [
+        // Admin email notification
+        supabase.functions.invoke('checkout-notification', {
+          body: checkoutPayload,
+        }),
+        // Push notifications
+        supabase.functions.invoke('send-push-notification', {
           body: {
-            userEmail: profile.email,
-            userName: profile.full_name || 'Valued Customer',
-            cartItems: checkoutPayload.cartItems,
-            totalPrice,
+            userId: user.id,
+            userEmail: profile?.email,
+            notifyAdmin: true,
+            userNotification: {
+              title: 'Order Confirmed! 🎉',
+              body: 'Your order has been placed successfully!',
+              url: '/cart',
+            },
+            adminNotification: {
+              title: 'New Order Received! 📦',
+              body: `New order from ${profile?.email || 'a customer'}`,
+              url: '/admin',
+            },
           },
-        });
+        }),
+      ];
+
+      // Add user email notification if email exists
+      if (profile?.email) {
+        notificationPromises.push(
+          supabase.functions.invoke('user-checkout-notification', {
+            body: {
+              userEmail: profile.email,
+              userName: profile.full_name || 'Valued Customer',
+              cartItems: checkoutPayload.cartItems,
+              totalPrice,
+            },
+          })
+        );
       }
 
-      // Send push notifications to user and admin
-      await supabase.functions.invoke('send-push-notification', {
-        body: {
-          userId: user.id,
-          userEmail: profile?.email,
-          notifyAdmin: true,
-          userNotification: {
-            title: 'Order Confirmed! 🎉',
-            body: 'Your order has been placed successfully!',
-            url: '/cart',
-          },
-          adminNotification: {
-            title: 'New Order Received! 📦',
-            body: `New order from ${profile?.email || 'a customer'}`,
-            url: '/admin',
-          },
-        },
-      });
+      // Wait for all notifications to complete
+      await Promise.all(notificationPromises);
 
       toast({
         title: "Checkout Completed!",
