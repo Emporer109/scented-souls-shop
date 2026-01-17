@@ -78,12 +78,20 @@ const Auth = () => {
     }
   };
 
+  // Check if instructions have been viewed
+  const instructionsViewed = sessionStorage.getItem('instructionsViewed');
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
+  }
+
+  // Redirect to instructions if not viewed yet
+  if (!instructionsViewed) {
+    return <Navigate to="/instructions" replace />;
   }
 
   if (user) {
