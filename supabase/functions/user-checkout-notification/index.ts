@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,12 +20,56 @@ interface UserNotificationPayload {
   totalPrice: number;
 }
 
+// Simple email validation
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Sanitize string for HTML (prevent XSS in emails)
+function sanitizeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    // Verify the user's JWT using getUser
+    const authSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: userError } = await authSupabase.auth.getUser();
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const authenticatedUserEmail = user.email;
+
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     
     if (!resendApiKey) {
@@ -32,16 +77,76 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    const { userEmail, userName, cartItems, totalPrice }: UserNotificationPayload = await req.json();
+    const payload = await req.json();
+    const { userEmail, userName, cartItems, totalPrice }: UserNotificationPayload = payload;
+
+    // Input validation
+    if (!userEmail || !isValidEmail(userEmail)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Verify that the authenticated user's email matches
+    if (authenticatedUserEmail !== userEmail) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Cannot send notifications to a different email' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!userName || typeof userName !== 'string' || userName.length > 200) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid userName' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!Array.isArray(cartItems) || cartItems.length === 0 || cartItems.length > 50) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid cartItems: must be array with 1-50 items' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate each cart item
+    for (const item of cartItems) {
+      if (!item.productTitle || typeof item.productTitle !== 'string' || item.productTitle.length > 200) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid product title' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 100) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid quantity' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (typeof item.price !== 'number' || item.price <= 0 || item.price > 1000000) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid price' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    if (typeof totalPrice !== 'number' || totalPrice <= 0 || totalPrice > 10000000) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid totalPrice' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
-    console.log('Sending checkout confirmation to user:', { userEmail, userName, totalPrice });
+    console.log('Sending checkout confirmation to user:', { userEmail, userName: sanitizeHtml(userName), totalPrice });
 
     const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-    // Build items list HTML
+    // Build items list HTML with sanitized content
     const itemsHtml = cartItems.map(item => `
       <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;">${item.productTitle}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827;">${sanitizeHtml(item.productTitle)}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827; text-align: center;">${item.quantity}</td>
         <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #111827; text-align: right;">₹${item.price.toFixed(2)}</td>
       </tr>
@@ -60,7 +165,7 @@ serve(async (req) => {
           
           <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
             <p style="color: #374151; font-size: 16px; margin-bottom: 20px;">
-              Dear <strong>${userName}</strong>,
+              Dear <strong>${sanitizeHtml(userName)}</strong>,
             </p>
             <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
               We're thrilled to confirm your order from Luxury Perfumes. Here's a summary of your purchase:
