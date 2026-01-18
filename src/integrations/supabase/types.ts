@@ -74,6 +74,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       products: {
@@ -205,6 +212,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -227,7 +241,81 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_public: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          gender: string | null
+          id: string | null
+          image_url: string | null
+          retail_price: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          gender?: string | null
+          id?: string | null
+          image_url?: string | null
+          retail_price?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          gender?: string | null
+          id?: string | null
+          image_url?: string | null
+          retail_price?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reviews_public: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string | null
+          product_id: string | null
+          rating: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          product_id?: string | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          product_id?: string | null
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_products: {
