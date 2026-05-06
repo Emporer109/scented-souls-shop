@@ -36,28 +36,22 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const fetchReviews = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('product_id', productId)
-      .order('created_at', { ascending: false });
+      .rpc('get_product_reviews', { p_product_id: productId });
 
     if (!error && data) {
-      // Fetch profile names for each review
-      const reviewsWithProfiles = await Promise.all(
-        data.map(async (review) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', review.user_id)
-            .maybeSingle();
-          return { ...review, profile };
-        })
-      );
-      setReviews(reviewsWithProfiles);
-      
-      // Check if current user has a review
+      const mapped: Review[] = data.map((r: { id: string; product_id: string; rating: number; comment: string | null; created_at: string; reviewer_name: string | null; is_own: boolean }) => ({
+        id: r.id,
+        product_id: r.product_id,
+        user_id: r.is_own && user ? user.id : '',
+        rating: r.rating,
+        comment: r.comment,
+        created_at: r.created_at,
+        profile: { full_name: r.reviewer_name },
+      }));
+      setReviews(mapped);
+
       if (user) {
-        const existing = reviewsWithProfiles.find(r => r.user_id === user.id);
+        const existing = mapped.find(r => r.user_id === user.id);
         setUserReview(existing || null);
         if (existing) {
           setRating(existing.rating);
