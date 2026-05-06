@@ -42,9 +42,7 @@ const ProductDetail = () => {
       if (!productId) return;
       
       const { data } = await supabase
-        .from('reviews')
-        .select('rating')
-        .eq('product_id', productId);
+        .rpc('get_product_reviews', { p_product_id: productId });
       
       if (data && data.length > 0) {
         const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
