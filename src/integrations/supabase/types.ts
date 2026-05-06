@@ -274,50 +274,20 @@ export type Database = {
         }
         Relationships: []
       }
-      reviews_public: {
-        Row: {
-          comment: string | null
-          created_at: string | null
-          id: string | null
-          product_id: string | null
-          rating: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          comment?: string | null
-          created_at?: string | null
-          id?: string | null
-          product_id?: string | null
-          rating?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          comment?: string | null
-          created_at?: string | null
-          id?: string | null
-          product_id?: string | null
-          rating?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Functions: {
+      get_product_reviews: {
+        Args: { p_product_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          is_own: boolean
+          product_id: string
+          rating: number
+          reviewer_name: string
+        }[]
+      }
       get_products: {
         Args: { p_gender?: string }
         Returns: {
