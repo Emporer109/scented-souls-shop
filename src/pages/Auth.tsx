@@ -143,11 +143,23 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            title: 'Sign in failed',
-            description: error.message,
-            variant: 'destructive',
-          });
+          const isInvalidCredentials =
+            error.message.toLowerCase().includes('invalid login credentials') ||
+            error.message.toLowerCase().includes('invalid credentials');
+          if (isInvalidCredentials && loginType === 'user') {
+            toast({
+              title: 'No account found',
+              description: "We couldn't find an account with these details. Please sign up first.",
+              variant: 'destructive',
+            });
+            setIsLogin(false);
+          } else {
+            toast({
+              title: 'Sign in failed',
+              description: error.message,
+              variant: 'destructive',
+            });
+          }
         } else {
           toast({
             title: 'Welcome back!',
