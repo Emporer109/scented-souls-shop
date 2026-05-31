@@ -1,0 +1,14 @@
+# The BrijSeller Perfume Shop
+
+> Welcome to The BrijSeller Perfume Shop — an online store for premium luxury perfumes and body sprays for men and women, with delivery across India. Prices are shown in Indian Rupees (₹).
+
+## Pages
+
+- [Home](/): Introduction to The BrijSeller Perfume Shop and featured luxury fragrances.
+- [Shop Collections](/select-gender): Choose between the men's and women's fragrance collections.
+- [Men's Collection](/products/men): Bold luxury perfumes and body sprays for men.
+- [Women's Collection](/products/women): Elegant luxury perfumes and body sprays for women.
+
+## Optional
+
+- [Ordering Instructions](/instructions): Step-by-step guide on how to place an order.
