@@ -193,7 +193,7 @@ const ProductDetail = () => {
 
                 {/* Description */}
                 <div className="mb-8">
-                  <h3 className="font-display text-lg text-foreground mb-3">Description</h3>
+                  <h2 className="font-display text-lg text-foreground mb-3">Description</h2>
                   <p className="font-body text-muted-foreground leading-relaxed">
                     {product.description || 'A luxurious fragrance crafted with the finest ingredients to provide a long-lasting and captivating scent experience.'}
                   </p>
@@ -201,7 +201,7 @@ const ProductDetail = () => {
 
                 {/* Features */}
                 <div className="mb-8 space-y-3">
-                  <h3 className="font-display text-lg text-foreground">Features</h3>
+                  <h2 className="font-display text-lg text-foreground">Features</h2>
                   <ul className="space-y-2">
                     {['Long-lasting fragrance', 'Premium quality ingredients', 'Elegant packaging', 'Perfect for all occasions'].map((feature) => (
                       <li key={feature} className="flex items-center gap-2 font-body text-muted-foreground">
