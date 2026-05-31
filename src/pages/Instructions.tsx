@@ -16,6 +16,35 @@ const Instructions = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
+      <Helmet>
+        <title>BrijSeller | How to Order Luxury Perfumes</title>
+        <meta name="description" content="Step-by-step instructions for ordering from The BrijSeller Perfume Shop, including how to enter your correct phone number for delivery." />
+        <link rel="canonical" href="https://brijseller-luxury-perfumes.lovable.app/instructions" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'How do I place an order at The BrijSeller Perfume Shop?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Sign up with your details, browse the men\u2019s or women\u2019s collection, add fragrances to your cart, and checkout to place your order.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'What phone number should I enter when ordering?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Enter a valid 10-digit mobile number so we can contact you and deliver your order correctly.',
+                },
+              },
+            ],
+          })}
+        </script>
+      </Helmet>
       <div className="w-full max-w-2xl">
         {/* Logo */}
         <div className="text-center mb-8">
