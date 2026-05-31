@@ -70,6 +70,7 @@ const Products = () => {
                 <Input
                   type="text"
                   placeholder="Search fragrances..."
+                  aria-label="Search fragrances"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-input"
