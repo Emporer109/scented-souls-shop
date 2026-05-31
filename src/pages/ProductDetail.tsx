@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { ProductReviews } from '@/components/ProductReviews';
@@ -8,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/hooks/useProducts';
 import { ShoppingCart, ArrowLeft, Loader2, Star } from 'lucide-react';
+
+const SITE_URL = 'https://brijseller-luxury-perfumes.lovable.app';
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
