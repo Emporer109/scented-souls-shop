@@ -103,9 +103,41 @@ const ProductDetail = () => {
     );
   }
 
+  const productUrl = `${SITE_URL}/product/${product.id}`;
+  const metaDescription = (product.description ||
+    `Shop ${product.title}, a premium ${product.gender === 'men' ? "men's" : "women's"} luxury fragrance from The BrijSeller Perfume Shop.`
+  ).slice(0, 160);
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{`BrijSeller | ${product.title}`.slice(0, 60)}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={productUrl} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={`BrijSeller | ${product.title}`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:url" content={productUrl} />
+        {product.image_url && <meta property="og:image" content={product.image_url} />}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: metaDescription,
+            image: product.image_url || undefined,
+            offers: {
+              '@type': 'Offer',
+              price: product.retail_price,
+              priceCurrency: 'INR',
+              url: productUrl,
+              availability: 'https://schema.org/InStock',
+            },
+          })}
+        </script>
+      </Helmet>
       <Navbar />
+      
       
       <main className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
