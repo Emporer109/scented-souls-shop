@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { ProductReviews } from '@/components/ProductReviews';
@@ -8,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/hooks/useProducts';
 import { ShoppingCart, ArrowLeft, Loader2, Star } from 'lucide-react';
+
+const SITE_URL = 'https://brijseller-luxury-perfumes.lovable.app';
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -100,9 +103,41 @@ const ProductDetail = () => {
     );
   }
 
+  const productUrl = `${SITE_URL}/product/${product.id}`;
+  const metaDescription = (product.description ||
+    `Shop ${product.title}, a premium ${product.gender === 'men' ? "men's" : "women's"} luxury fragrance from The BrijSeller Perfume Shop.`
+  ).slice(0, 160);
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{`BrijSeller | ${product.title}`.slice(0, 60)}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={productUrl} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={`BrijSeller | ${product.title}`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:url" content={productUrl} />
+        {product.image_url && <meta property="og:image" content={product.image_url} />}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: metaDescription,
+            image: product.image_url || undefined,
+            offers: {
+              '@type': 'Offer',
+              price: product.retail_price,
+              priceCurrency: 'INR',
+              url: productUrl,
+              availability: 'https://schema.org/InStock',
+            },
+          })}
+        </script>
+      </Helmet>
       <Navbar />
+      
       
       <main className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-6xl">
@@ -193,7 +228,7 @@ const ProductDetail = () => {
 
                 {/* Description */}
                 <div className="mb-8">
-                  <h3 className="font-display text-lg text-foreground mb-3">Description</h3>
+                  <h2 className="font-display text-lg text-foreground mb-3">Description</h2>
                   <p className="font-body text-muted-foreground leading-relaxed">
                     {product.description || 'A luxurious fragrance crafted with the finest ingredients to provide a long-lasting and captivating scent experience.'}
                   </p>
@@ -201,7 +236,7 @@ const ProductDetail = () => {
 
                 {/* Features */}
                 <div className="mb-8 space-y-3">
-                  <h3 className="font-display text-lg text-foreground">Features</h3>
+                  <h2 className="font-display text-lg text-foreground">Features</h2>
                   <ul className="space-y-2">
                     {['Long-lasting fragrance', 'Premium quality ingredients', 'Elegant packaging', 'Perfect for all occasions'].map((feature) => (
                       <li key={feature} className="flex items-center gap-2 font-body text-muted-foreground">

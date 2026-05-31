@@ -87,7 +87,7 @@ export function Navbar() {
             {user ? (
               <>
                 <Link to="/cart" className="relative">
-                  <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
+                  <Button variant="ghost" size="icon" className="text-foreground hover:text-primary" aria-label={`Cart, ${totalItems} items`}>
                     <ShoppingCart className="h-5 w-5" />
                     {totalItems > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
@@ -97,18 +97,18 @@ export function Navbar() {
                   </Button>
                 </Link>
                 <Link to="/profile">
-                  <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
+                  <Button variant="ghost" size="icon" className="text-foreground hover:text-primary" aria-label="My profile">
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>
                 {isAdmin && (
                   <Link to="/admin">
-                    <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
+                    <Button variant="ghost" size="icon" className="text-foreground hover:text-primary" aria-label="Admin panel">
                       <Settings className="h-5 w-5" />
                     </Button>
                   </Link>
                 )}
-                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-foreground hover:text-primary">
+                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-foreground hover:text-primary" aria-label="Sign out">
                   <LogOut className="h-5 w-5" />
                 </Button>
               </>
@@ -125,6 +125,8 @@ export function Navbar() {
           <button
             className="md:hidden text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>

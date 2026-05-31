@@ -1,9 +1,18 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 
 const SelectGender = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>BrijSeller | Shop Perfumes for Men & Women</title>
+        <meta name="description" content="Choose your collection at The BrijSeller Perfume Shop. Explore exclusive luxury fragrances curated for men and women." />
+        <link rel="canonical" href="https://brijseller-luxury-perfumes.lovable.app/select-gender" />
+        <meta property="og:title" content="BrijSeller | Shop Perfumes for Men & Women" />
+        <meta property="og:description" content="Explore exclusive luxury fragrances curated for men and women." />
+        <meta property="og:url" content="https://brijseller-luxury-perfumes.lovable.app/select-gender" />
+      </Helmet>
       <Navbar />
       
       <main className="pt-24 pb-16 px-4">

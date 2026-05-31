@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { ProductCard } from '@/components/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
@@ -42,9 +43,18 @@ const Products = () => {
   const hasActiveFilters = searchQuery !== '' || priceRange[0] > 0 || priceRange[1] < maxPrice;
 
   const genderTitle = gender === 'men' ? 'Men' : 'Women';
+  const canonical = `https://brijseller-luxury-perfumes.lovable.app/products/${gender}`;
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{`BrijSeller | ${genderTitle}'s Perfume Collection`}</title>
+        <meta name="description" content={`Shop ${genderTitle.toLowerCase()}'s luxury perfumes and body sprays at The BrijSeller Perfume Shop. ${gender === 'men' ? 'Bold fragrances for the modern gentleman.' : 'Elegant scents for the sophisticated woman.'}`} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:title" content={`BrijSeller | ${genderTitle}'s Perfume Collection`} />
+        <meta property="og:description" content={`Shop ${genderTitle.toLowerCase()}'s luxury perfumes and body sprays at The BrijSeller Perfume Shop.`} />
+        <meta property="og:url" content={canonical} />
+      </Helmet>
       <Navbar />
       
       <main className="pt-24 pb-16 px-4">
@@ -70,6 +80,7 @@ const Products = () => {
                 <Input
                   type="text"
                   placeholder="Search fragrances..."
+                  aria-label="Search fragrances"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-input"

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { ArrowRight } from 'lucide-react';
@@ -24,6 +25,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-500">
+      <Helmet>
+        <title>BrijSeller | Premium Luxury Perfumes & Fragrances</title>
+        <meta name="description" content="Welcome to The BrijSeller Perfume Shop. Discover luxury perfumes and body sprays for men and women — premium fragrances delivered across India." />
+        <link rel="canonical" href="https://brijseller-luxury-perfumes.lovable.app/" />
+        <meta property="og:title" content="BrijSeller | Premium Luxury Perfumes & Fragrances" />
+        <meta property="og:description" content="Discover luxury perfumes and body sprays for men and women at The BrijSeller Perfume Shop." />
+        <meta property="og:url" content="https://brijseller-luxury-perfumes.lovable.app/" />
+      </Helmet>
       <Navbar />
       
       {/* Hero Section */}

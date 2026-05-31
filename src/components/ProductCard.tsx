@@ -32,9 +32,9 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-display text-xl text-foreground mb-2 line-clamp-1">
+        <h2 className="font-display text-xl text-foreground mb-2 line-clamp-1">
           {product.title}
-        </h3>
+        </h2>
         {product.description && (
           <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-2">
             {product.description}
